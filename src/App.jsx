@@ -686,7 +686,7 @@ function LoadingPage() {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <img 
-        src="/loading.jpg" 
+        src="/Loading.jpg" 
         alt="로딩 중" 
         className="mx-auto mb-4 h-64 w-64 rounded-2xl shadow-lg object-cover"
       />
