@@ -587,7 +587,7 @@ function StartPage({ onStart }) {
   return (
     <div className="text-center">
       <div className="mb-6 text-center">
-        <img src="/src/Title.jpg" alt="휴식 스타일 진단" className="mx-auto h-72 w-auto rounded-xl shadow-md" />
+        <img src="/Title.jpg" alt="휴식 스타일 진단" className="mx-auto h-72 w-auto rounded-xl shadow-md" />
       </div>
       <div className="mx-auto mb-6 max-w-xl text-slate-700">
         <p className="leading-relaxed">오늘도 바쁘게 일하는 당신, 일개미의 쉬는 시간은 어떻게 보내고 있나요? 지금부터 <b>12가지 질문</b>에 답하고, 나만의 직장인 <b>휴식 스타일</b>을 확인해 보세요. 그리고 당신만의 <b>휴식 팁</b>까지 챙겨가세요 :)</p>
@@ -611,7 +611,7 @@ function ResultPage({ score, myType, onShare, onRetry, onShareKakao, onShareNave
       {/* 유형별 대표 이미지 추가 */}
       <div className="mb-6 text-center">
         <img 
-          src={`/src/${myType.key}.jpg`}
+          src={`/${myType.key}.jpg`}
           alt={`${myType.name} 이미지`}
           className="mx-auto h-96 w-96 rounded-2xl shadow-lg object-cover"
         />
@@ -686,7 +686,7 @@ function LoadingPage() {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <img 
-        src="/src/loading.jpg" 
+        src="/loading.jpg" 
         alt="로딩 중" 
         className="mx-auto mb-4 h-64 w-64 rounded-2xl shadow-lg object-cover"
       />
