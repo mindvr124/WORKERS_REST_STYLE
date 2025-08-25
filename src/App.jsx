@@ -55,27 +55,161 @@ const QUESTIONS = [
 const TYPES = [
   {
     key: 0,
-    name: "고요한 리커버리 개미",
-    tagline: "혼자만의 잔잔한 휴식이 최고의 충전",
+    name: "[은둔형]회의실 잠입 개미",
+    tagline: "쉬는 시간? 그냥 가만히 두세요.",
     desc: [
-      "업무로부터 심리적 거리두기(Detachment)와 조용한 휴식을 선호합니다.",
-      "소음이 적고 개인화된 공간에서의 미니 브레이크가 효과적입니다.",
-      "루틴을 무너뜨리지 않는 짧고 규칙적인 휴식이 잘 맞습니다.",
+      "쉬는 시간에도 절대 자리에서 멀리 안감",
+      "동료들이 커피 타러 갈 때, '난 괜찮아요~'하고 나음",
+      "자리에서 이어폰 끼고 음악, 영상, 게임, 웹서핑에 몰입",
+      "업무 중에도 '자리=안전지대'라는 인식 강함",
+      "사무실 안에서도 안정, 통제감이 느껴지는 공간 선호",
+      "짧은 휴식 시간조차 '피로회복'에 최적화하려는 경향",
     ],
     tips: [
-      "노이즈 캔슬링·차분한 음악으로 3~5분 멍타임",
-      "눈·목 스트레칭, 20-20-20 규칙(20분마다 먼 곳 20초 보기)",
-      "자리 근처 ‘마음챙김 카드’ 1장 읽기",
+      "점심 직후 5분 눈감기",
+      "개인 이어폰으로 ASMR 또는 잔잔한 음악 듣기",
+      "스트레스가 큰 날은 그냥 멍 때리기",
     ],
-    hashtags: ["#디탯치먼트", "#릴렉세이션", "#조용한충전"],
+    hashtags: ["#정적", "#자리사수", "#혼자충전"],
   },
-  { key: 1, name: "집중 리셋 개미", tagline: "조용히 정리하고 다시 몰입", desc: ["업무 컨트롤 감각(Control)을 회복하며, 산만함을 줄이는 리셋형.", "짧은 정리·계획·정돈 루틴으로 에너지를 저장합니다."], tips: ["3분 책상 정돈·To‑Do 리스캔", "숨 고르기(4‑4‑6 호흡) 3회", "타이머 10분 집중(포모도로 미니)"], hashtags: ["#컨트롤", "#정돈", "#리셋"] },
-  { key: 2, name: "몰입 마스터리 개미", tagline: "작은 성취가 큰 회복", desc: ["새 기술·취미 등을 살짝 맛보는 ‘마스터리’에 회복 포인트가 있습니다.", "지식·퍼즐·미니 학습앱같이 가벼운 성장 자극을 선호합니다."], tips: ["5분 튜토리얼·퀴즈 1세트", "메모장에 ‘오늘 배운 1문장’ 기록", "작은 난이도의 업무 하나 미리 처리"], hashtags: ["#마스터리", "#미니학습", "#작은성취"] },
-  { key: 3, name: "밸런스 워커 개미", tagline: "움직임과 쉼의 황금비", desc: ["가벼운 신체활동과 정적 휴식의 균형을 즐깁니다.", "마음과 몸을 동시에 정비하는 하이브리드 타입입니다."], tips: ["2~3분 스탠딩·목·어깨 스트레칭", "느린 호흡 + 짧은 산책 5분", "물 한 컵 리추얼"], hashtags: ["#마이크로브레이크", "#스트레칭", "#워킹"] },
-  { key: 4, name: "리프레시 러너 개미", tagline: "짧게라도 몸이 움직여야 산다", desc: ["활동성 높은 회복을 선호, 산책·계단 오르기 같은 미니 운동이 잘 맞습니다.", "움직임으로 긴장을 빼면 집중력이 빠르게 회복됩니다."], tips: ["건물 한 바퀴 워킹, 1층↔3층 계단 왕복", "손목·허리 가동범위 스트레칭", "‘물 + 햇빛 + 멀리보기’ 3콤보"], hashtags: ["#액티브휴식", "#산책", "#집중력부스트"] },
-  { key: 5, name: "에너지 네트워커 개미", tagline: "함께 웃으면 회복 속도가 빨라진다", desc: ["짧은 스몰토크·팀 잡담에서 정서적 활력을 얻습니다.", "사람과의 교류가 스트레스 완충 장치로 작용합니다."], tips: ["동료에게 1문장 칭찬·감사 건네기", "커피 타임 5분, 소셜 캘린더 가볍게 예약", "사내 소모임·관심사 채널 구독"], hashtags: ["#소셜리커버리", "#스몰토크", "#팀에너지"] },
-  { key: 6, name: "커피챗 리더 개미", tagline: "대화를 이끄는 사람이 분위기를 바꾼다", desc: ["정보 교환·네트워킹에 적극적이며, 팀 사기 진작에 기여합니다.", "짧은 회고·잡담에서도 생산적인 의미를 찾습니다."], tips: ["‘요즘 어때요?’ 아이스브레이크 1개 준비", "간식 나눔 데이·버디 커피 운영", "잡담 5분 + 정리 1분(인사이트 메모)"], hashtags: ["#네트워킹", "#리더십", "#밝은분위기"] },
-  { key: 7, name: "탕비실 사교왕 개미", tagline: "“커피타임은 사교타임이죠!”", desc: ["사람과의 대화·교류에서 가장 큰 회복 에너지를 얻는 타입입니다.", "사내 이벤트·생일파티·간식 타임 등 소셜 활동에 적극적입니다."], tips: ["스몰토크 3종 세트(근황·관심사·주말계획)", "사내 동호회·취미 모임 주 1회 참여", "‘함께 웃는 시간’ 캘린더에 고정"], hashtags: ["#수다", "#네트워킹", "#밝은에너지"] },
+  { 
+    key: 1, 
+    name: "[힐러형]틈새 행복 개미", 
+    tagline: "따뜻한 커피 한 잔이면 세상이 평화로워져요", 
+    desc: [
+      "커피나 차처럼 음료와 함께하는 정적이 휴식이 최고",
+      "잔잔한 대화는 좋지만, 시끌벅적 분위기는 금세 피로함",
+      "따뜻한 머그컵을 두 손으로 감싸 쥐며 잠시 멍 때림",
+      "주변에 아로마 오일, 디퓨저 등 같은 힐링 소품을 둠",
+      "반복되는 루틴이 주는 심리적 안전지대 효과",
+      "감각적 만족(향, 온도, 맛)이 곧 회복 에너지",
+    ], 
+    tips: [
+      "본인만의 머그컵+티백 구비",
+      "낮은 톤의 대화와 잔잔한 웃음은 환영",
+      "음악, 독서, 간단한 메모로 마음 정리",
+      "창가 자리에서 커피 마시며 멍때리기",
+    ], 
+    hashtags: ["#따뜻함", "#차분", "#휴식루틴"] 
+  },
+  { 
+    key: 2, 
+    name: "[탐구형] 생산적 고독 개미", 
+    tagline: "조용히 나만의 할 일 하는게 제일 편해요", 
+    desc: [
+      "혼자 몰입할 수 있는 조용한 공간을 선호",
+      "휴식시간에도 '쓸모 있는 시간'을 보내는 것이 만족감의 핵심",
+      "휴식과 자기계발의 경계가 흐려진 타입",
+      "노트북, 태블릿으로 자료 검색, 새로운 기술과 정보 탐색",
+      "지식과 정보 축적이 곧 심리적 안정감",
+      "자리를 벗어나도 조용한 구석이나 회의실 선택",
+    ], 
+    tips: [
+      "온라인 강의, 유튜브 정보 체널 시청",
+      "개인 목표를 위한 공부와 연습",
+      "사무실 조용한 구역 '숨을 수 있는 장소' 확보",
+    ], 
+    hashtags: ["#몰입", "#조용", "#생산적고독"] 
+  },
+  { 
+    key: 3, 
+    name: "[몰입형] 감성파 아이디어 뱅크 개미", 
+    tagline: "휴식이 단순한 멈춤이 아니라, 창작의 시간.", 
+    desc: [
+      "그림, 글쓰기, 영상 편집 등 창작 활동에 몰입해 머릿속 피로를 새로운 아이디어와 감성으로 변환하는 타입",
+      "모바일과 태블릿 앱으로 디자인과 영상 작업",
+      "사진찍기, 이미지와 자료 스크랩",
+      "창작 활동이 주는 몰입감이 스트레스 차단막 역할",
+      "결과물에 대한 성취감이 회복 에너지로 전환",
+      "휴식과 창작의 경계가 모호한 창의적 타입",
+    ], 
+    tips: [
+      "글 쓰기, 영상 또는 사진 편집",
+      "콘텐츠, 전시, 영상 감상으로 영감",
+      "휴대폰 메모, 드로잉 앱 활용, 작은 스케치북 책상에 두기",
+    ], 
+    hashtags: ["#창의력", "#감성", "#아이디어충전"] 
+  },
+  { 
+    key: 4, 
+    name: "[중형] 책상 유목민 개미", 
+    tagline: "오늘은 혼자 있고 싶은데, 내일은 수다 좋아요.", 
+    desc: [
+      "상황과 기분에 따라 혼자 모드와 함께 모드를 자유롭게 오가는 타입",
+      "자기 자리와 공용 공간을 오가며, 그날의 에너지 상태와 분위기에 맞춰 가장 편한 휴식 방식을 선택함",
+      "피곤할 땐 자리에 앉아 조용히 충전",
+      "기분 좋을 땐 탕비실, 회의실에서 동료와 가벼운 수다",
+      "가끔은 창가 자리, 옥상, 복도 등 '기분 따라' 스팟 이동",
+      "하루에도 몇 번 모드 전환 가능",
+      "타인과의 교류도 에너지를 얻지만, 자기만의 시간도 필수",
+      "'휴식=상황 적응력'이라는 생각이 강함",
+    ], 
+    tips: [
+      "가변운 대화와 커피 타임",
+      "분위기 좋은 공용 자리에서 가벼운 업무 정리",
+      "동료와 짧은 대화 후, 혼자 산책과 음악으로 재정비하는 '2단계 휴식'",
+    ], 
+    hashtags: ["#유연함", "#상황적응", "#밸런스"] 
+  },
+  { 
+    key: 5, 
+    name: "[소셜러형] 탕비실 사교왕 개미", 
+    tagline: "사람과의 대화와 교류가 곧 회복 에너지.", 
+    desc: [
+      "쉬는 시간을 최대한 활용해 동료들과 스몰토크, 잡담, 정보 교환을 즐김",
+      "커피 마실래요?를 먼저 제안하는 경우가 많음",
+      "점심 약속, 간식 타임, 생일파티 등 회사 이벤트에 적극 참여",
+      "사회적 교류에서 정서적 안정감과 활력을 얻음",
+      "'함께 웃는 시간'이 업무 스트레스 완화에 효과적",
+      "타인의 반응과 교감이 곧 에너지의 원천",
+    ], 
+    tips: [
+      "커피 타임, 간식 나눔, 점심과 저녁 약속",
+      "사내 동호회, 취미 모임 참여",
+      "가벼운 잡담과 웃음으로 기분 전환",
+    ], 
+    hashtags: ["#수다", "#네트워킹", "#밝은에너지"] 
+  },
+  { 
+    key: 6, 
+    name: "[탐엄형] 복도 순찰러 개미", 
+    tagline: "잠깐 다녀올게요. 금방 와요.", 
+    desc: [
+      "사무실과 건물 곳곳을 돌아다니며 머리를 식히는 타입",
+      "가벼운 움직임이 최고의 회복법이라, 쉬는 시간이면 자연스럽게 발이 먼저 움직임",
+      "비상계단, 복도, 로비, 옥상 등 회사의 숨은 스팟을 순환",
+      "탕비실 들렸다가 창가, 다시 복도로 이어지는 '휴식 루트' 보유",
+      "반복된 환경에서 벗어나 시야를 바꾸는 게 큰 스트레스 해소",
+      "이동하면서도 생각을 정리하거나 아이디어를 떠올림",
+    ], 
+    tips: [
+      "계단 오르내리기",
+      "창밖 풍경 감상",
+      "건물 로비나 외부 테리스에서 잠깐 숨돌리기",
+    ], 
+    hashtags: ["#움직임", "#탐험", "#활동적"] 
+  },
+  { 
+    key: 7, 
+    name: "[리더형] 헬스장 직행러 개미", 
+    tagline: "땀 좀 식히고 올게요.", 
+    desc: [
+      "쉬는 시간에도 활동향이 최상위",
+      "운동, 외출, 강한 움직임이 곧 휴식인 타입",
+      "점심시간마다 헬스장, 수영장, 러닝 코스로 직행",
+      "계단 오르내리기, 사무실 주변 파워워킹이 일상",
+      "사무실 내에서도 복도, 옥상, 로비를 빠른 속도로 이동",
+      "종종 동료를 운동과 산책에 합류시키는 리더 역할",
+      "땀 흘린 뒤 개운함에 오후 집중력을 끌어올림",
+      "가만히 있는 것보다 움직이며 에너지를 재충전",
+    ], 
+    tips: [
+      "짧은 외출로 신선한 공기 마시기",
+      "계단 운동, 간단한 스트레칭 루틴 구비",
+      "점심시간 짧은 조깅",
+    ], 
+    hashtags: ["#에너지", "#운동러", "#파워풀"] 
+  },
 ];
 
 // ===== (과거) 유형별 이미지 유틸 – 결과 화면 이미지 제거로 현재 미사용 =====
@@ -426,7 +560,9 @@ function BrandHeader({ onStart }) {
         ) : (
           <div className="h-8 w-8 rounded-xl brand-bg ring-1 ring-black/10" />
         )}
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">나의 <span className="brand-text">휴식 스타일</span> 찾기</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">나의 <span className="brand-text">휴식 스타일</span> 찾기</h1>
+        </div>
       </div>
       <BrandButton onClick={onStart} icon={PlayCircle} label="시작" variant="outline" />
     </div>
@@ -450,6 +586,9 @@ function BrandButton({ label, onClick, icon: Icon, variant = "solid" }) {
 function StartPage({ onStart }) {
   return (
     <div className="text-center">
+      <div className="mb-6 text-center">
+        <img src="/src/Title.jpg" alt="휴식 스타일 진단" className="mx-auto h-72 w-auto rounded-xl shadow-md" />
+      </div>
       <div className="mx-auto mb-6 max-w-xl text-slate-700">
         <p className="leading-relaxed">오늘도 바쁘게 일하는 당신, 일개미의 쉬는 시간은 어떻게 보내고 있나요? 지금부터 <b>12가지 질문</b>에 답하고, 나만의 직장인 <b>휴식 스타일</b>을 확인해 보세요. 그리고 당신만의 <b>휴식 팁</b>까지 챙겨가세요 :)</p>
       </div>
@@ -469,7 +608,14 @@ function ResultPage({ score, myType, onShare, onRetry, onShareKakao, onShareNave
         <div className="text-3xl font-extrabold tracking-tight" style={{ color: "var(--brand)" }}>{score} / 12</div>
       </div>
 
-      {/* 이미지 제거: 대표 썸네일, 캡처 이미지 표시 없음 */}
+      {/* 유형별 대표 이미지 추가 */}
+      <div className="mb-6 text-center">
+        <img 
+          src={`/src/${myType.key}.jpg`}
+          alt={`${myType.name} 이미지`}
+          className="mx-auto h-96 w-96 rounded-2xl shadow-lg object-cover"
+        />
+      </div>
 
       <div className="rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
         <div className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--brand)" }}>나의 휴식 스타일</div>
@@ -492,13 +638,7 @@ function ResultPage({ score, myType, onShare, onRetry, onShareKakao, onShareNave
         <BrandButton onClick={onRetry} icon={RotateCcw} label="다른 설문하기(처음으로)" variant="outline" />
       </div>
 
-      <details className="mt-6 cursor-pointer rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
-        <summary className="font-semibold text-slate-700">진단 로직 & 근거 보기</summary>
-        <div className="mt-2 space-y-2">
-          <p>• 각 문항 A=1점, B=0점으로 합산합니다. 점수(0~12)를 8구간으로 등분해 유형을 매칭합니다: <code>type = floor(score * 8 / 13)</code> (0~7).</p>
-          <p>• 설계 레퍼런스: 회복 경험 모델(Detachment/Relaxation/Mastery/Control), 짧은 <em>마이크로 브레이크</em> 연구 맥락을 반영하여 실무 친화적으로 재구성했습니다.</p>
-        </div>
-      </details>
+    
     </div>
   );
 }
@@ -542,7 +682,20 @@ function ChoiceCard({ label, text, onClick }) {
   );
 }
 
-function LoadingPage() { return (<div className="flex flex-col items-center justify-center py-8 text-center"><div className="mb-4 h-12 w-12 animate-spin rounded-full border-4" style={{ borderColor: "#e0e7ff", borderTopColor: "var(--brand)" }} /><div className="text-base font-semibold">개미가 열심히 분석 중입니다!</div><div className="mt-1 text-sm text-slate-600">잠시만 기다려 주세요. 곧 마무리됩니다~</div></div>); }
+function LoadingPage() { 
+  return (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <img 
+        src="/src/loading.jpg" 
+        alt="로딩 중" 
+        className="mx-auto mb-4 h-64 w-64 rounded-2xl shadow-lg object-cover"
+      />
+      <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4" style={{ borderColor: "#e0e7ff", borderTopColor: "var(--brand)" }} />
+      <div className="text-base font-semibold">개미가 열심히 분석 중입니다!</div>
+      <div className="mt-1 text-sm text-slate-600">잠시만 기다려 주세요. 곧 마무리됩니다~</div>
+    </div>
+  ); 
+}
 
 // (선택) 개발 중 콘솔에서만 간단 검증하고 싶다면 아래 주석을 해제하세요.
 // useEffect(() => { console.table(runSelfTests()); }, []);
