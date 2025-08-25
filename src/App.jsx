@@ -172,7 +172,7 @@ const TYPES = [
   },
   { 
     key: 6, 
-    name: "[탐엄형] 복도 순찰러 개미", 
+    name: "[탐험형] 복도 순찰러 개미", 
     tagline: "잠깐 다녀올게요. 금방 와요.", 
     desc: [
       "사무실과 건물 곳곳을 돌아다니며 머리를 식히는 타입",
@@ -366,7 +366,12 @@ export default function App() {
   // 카카오 SDK 준비
   useEffect(() => { loadKakaoIfNeeded(CONFIG.kakaoAppKey); }, []);
 
-  function start() { setAnswers([]); setStep(1); }
+  function start() { 
+    setAnswers([]); 
+    setStep(1); 
+    // 로컬 스토리지도 초기화
+    localStorage.removeItem("restStyleState");
+  }
   function choose(choice) {
     const i = answers.length;
     if (i >= QUESTIONS.length) return;
@@ -378,7 +383,12 @@ export default function App() {
     }
   }
   function goLoadingThenResult() { setStep(2); setTimeout(() => setStep(3), CONFIG.loadingMs); }
-  function resetAll() { setAnswers([]); setStep(0); }
+  function resetAll() { 
+    setAnswers([]); 
+    setStep(0); 
+    // 로컬 스토리지도 초기화
+    localStorage.removeItem("restStyleState");
+  }
 
   function buildShareText() {
     const title = `내 휴식 스타일: ${myType.name}`;
@@ -451,7 +461,7 @@ export default function App() {
       <BrandStyles />
 
       <div className="mx-auto max-w-2xl px-6 py-8">
-        <BrandHeader onStart={start} />
+        <BrandHeader />
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }} className="rounded-2xl bg-white/85 shadow-xl ring-1 ring-black/5 backdrop-blur p-6 sm:p-8">
           {step === 0 && <StartPage onStart={start} />}
@@ -551,9 +561,9 @@ function BrandStyles() {
   );
 }
 
-function BrandHeader({ onStart }) {
+function BrandHeader() {
   return (
-    <div className="mb-6 flex items-center justify-between">
+    <div className="mb-6 flex items-center justify-center">
       <div className="flex items-center gap-3">
         {BRAND.logoUrl ? (
           <img src={BRAND.logoUrl} alt={`${BRAND.name} logo`} className="h-8 w-8 rounded-xl ring-1 ring-black/10 object-contain" />
@@ -564,7 +574,6 @@ function BrandHeader({ onStart }) {
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">나의 <span className="brand-text">휴식 스타일</span> 찾기</h1>
         </div>
       </div>
-      <BrandButton onClick={onStart} icon={PlayCircle} label="시작" variant="outline" />
     </div>
   );
 }
@@ -660,8 +669,20 @@ function QuizPage({ answers, onChoose, onFinish }) {
       <div className="mb-4 text-sm font-medium brand-text">설문 진행 중</div>
       <div className="mb-2 text-base sm:text-lg font-semibold">{current.q}</div>
       <div className="mt-4 grid gap-3">
-        <ChoiceCard label="A" text={current.a} onClick={() => onChoose("A")} />
-        <ChoiceCard label="B" text={current.b} onClick={() => onChoose("B")} />
+        <ChoiceCard 
+          label="A" 
+          text={current.a} 
+          onClick={() => onChoose("A")} 
+          isSelected={false}
+          key={`question-${i}-A`}
+        />
+        <ChoiceCard 
+          label="B" 
+          text={current.b} 
+          onClick={() => onChoose("B")} 
+          isSelected={false}
+          key={`question-${i}-B`}
+        />
       </div>
       <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
         <span>문항 {i + 1} / {QUESTIONS.length}</span>
@@ -671,11 +692,29 @@ function QuizPage({ answers, onChoose, onFinish }) {
   );
 }
 
-function ChoiceCard({ label, text, onClick }) {
+function ChoiceCard({ label, text, onClick, isSelected }) {
   return (
-    <motion.button whileHover={{ y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.06)" }} whileTap={{ scale: 0.98 }} onClick={onClick} className={classNames("w-full text-left rounded-xl border border-slate-200 bg-white/70 p-4","transition group focus:outline-none focus:ring-4",)} style={{ outlineColor: "var(--brand)" }}>
+    <motion.button 
+      whileHover={{ y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.06)" }} 
+      whileTap={{ scale: 0.98 }} 
+      onClick={onClick} 
+      className={classNames(
+        "w-full text-left rounded-xl border p-4 transition-all duration-200 group focus:outline-none focus:ring-4",
+        isSelected 
+          ? "border-[var(--brand)] bg-[var(--brand)]/10 ring-2 ring-[var(--brand)]/20" 
+          : "border-slate-200 bg-white/70 hover:border-[var(--brand)]/50"
+      )} 
+      style={{ outlineColor: "var(--brand)" }}
+    >
       <div className="flex items-start gap-3">
-        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-sm font-bold text-slate-700">{label}</span>
+        <span className={classNames(
+          "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-bold transition-all duration-200",
+          isSelected 
+            ? "border-[var(--brand)] bg-[var(--brand)] text-white" 
+            : "border-slate-300 bg-slate-50 text-slate-700"
+        )}>
+          {label}
+        </span>
         <span className="text-sm sm:text-base">{text}</span>
       </div>
     </motion.button>
