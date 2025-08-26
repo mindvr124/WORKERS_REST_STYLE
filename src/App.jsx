@@ -29,10 +29,10 @@ const CONFIG = {
   // --- 공유 관련 ---
   siteUrl: typeof window !== "undefined" ? window.location.origin : "",
   ogImageDefault: "/og-default.png", // 정적 공개 이미지 URL(권장: CDN)
-  kakaoAppKey: null, // 카카오 JavaScript 키(예: "abcd1234...")
+  kakaoAppKey: "1e54282d28e981ee3b6440f9f1f5ad53", // 카카오 JavaScript 키(예: "abcd1234...")
   // 유형별 OG 이미지가 서버에 호스팅되어 있다면 base URL을 설정하세요. 예) "https://cdn.site.com/rest-types/"
   // 이 경우 Kakao/OG 메타에 해당 퍼블릭 URL이 우선 사용됩니다.
-  typeOgBaseUrl: null,
+  typeOgBaseUrl: "https://workers-rest-style.vercel.app/Title.jpg",
 };
 
 // ===== 설문 문항 =====
@@ -365,6 +365,33 @@ export default function App() {
 
   // 카카오 SDK 준비
   useEffect(() => { loadKakaoIfNeeded(CONFIG.kakaoAppKey); }, []);
+  
+  // URL 파라미터에서 결과 정보 읽기 (직접 링크 접근 시)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const typeParam = urlParams.get('type');
+      const scoreParam = urlParams.get('score');
+      
+      if (typeParam !== null && scoreParam !== null) {
+        const typeKey = parseInt(typeParam);
+        const score = parseInt(scoreParam);
+        
+        // 유효한 유형과 점수인지 확인
+        if (typeKey >= 0 && typeKey <= 7 && score >= 0 && score <= 12) {
+          // 해당 유형의 점수로 답변 배열 생성
+          const targetScore = Math.floor((typeKey * 13) / 8);
+          const newAnswers = Array(12).fill("A").slice(0, targetScore);
+          setAnswers(newAnswers);
+          setStep(3); // 결과 페이지로 이동
+          
+          // URL 파라미터 제거 (브라우저 히스토리 정리)
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        }
+      }
+    }
+  }, []);
 
   function start() { 
     setAnswers([]); 
@@ -404,6 +431,7 @@ export default function App() {
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url });
+        setToast("🎉 공유가 완료되었습니다!");
         return; // 성공 시 종료
       }
     } catch (e) {
@@ -414,7 +442,7 @@ export default function App() {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(text);
-        setToast("링크가 클립보드에 복사되었습니다!");
+        setToast("📋 링크가 클립보드에 복사되었습니다!");
         return;
       }
     } catch (e) {
@@ -424,7 +452,7 @@ export default function App() {
     // 3) execCommand 폴백 + 패널 오픈
     try {
       legacyCopy(text);
-      setToast("링크가 클립보드에 복사되었습니다!");
+      setToast("📋 링크가 클립보드에 복사되었습니다!");
     } catch {
       setSharePanel({ open: true, content: text });
     }
@@ -432,7 +460,10 @@ export default function App() {
 
   async function shareKakao() {
     const ok = await loadKakaoIfNeeded(CONFIG.kakaoAppKey);
-    if (!ok || !isKakaoReady()) { alert("카카오 공유를 사용하려면 Kakao JavaScript 키와 퍼블릭 OG 이미지가 필요합니다. CONFIG.kakaoAppKey / typeOgBaseUrl을 설정하세요."); return; }
+    if (!ok || !isKakaoReady()) { 
+      setToast("⚠️ 카카오 공유를 사용하려면 설정이 필요합니다. 링크 복사로 진행해 주세요."); 
+      return; 
+    }
     const shareUrl = window.location.href;
     const title = `내 휴식 스타일: ${myType.name}`;
     const description = `${myType.tagline} · 점수 ${score}/12`;
@@ -443,10 +474,71 @@ export default function App() {
         content: { title, description, imageUrl, link: { mobileWebUrl: shareUrl, webUrl: shareUrl } },
         buttons: [{ title: "결과 보기", link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
       });
-    } catch { alert("카카오 공유 중 오류가 발생했습니다. 링크 복사로 진행해 주세요."); }
+      setToast("💬 카카오톡 공유가 시작되었습니다!");
+    } catch { 
+      setToast("❌ 카카오 공유 중 오류가 발생했습니다. 링크 복사로 진행해 주세요."); 
+    }
   }
 
-  function shareNaver() { const shareUrl = window.location.href; const title = `내 휴식 스타일: ${myType.name}`; window.open(buildNaverShareUrl(shareUrl, title), "_blank", "noopener,noreferrer,width=600,height=800"); }
+  function shareNaver() { 
+    const shareUrl = window.location.href; 
+    const title = `내 휴식 스타일: ${myType.name}`; 
+    try {
+      window.open(buildNaverShareUrl(shareUrl, title), "_blank", "noopener,noreferrer,width=600,height=800");
+      setToast("🌐 네이버 공유가 시작되었습니다!");
+    } catch {
+      setToast("❌ 네이버 공유 중 오류가 발생했습니다. 링크 복사로 진행해 주세요.");
+    }
+  }
+  
+  function copyResultLink() {
+    // 결과 링크 생성 (유형과 점수 정보 포함)
+    // 현재 페이지의 전체 URL을 기반으로 링크 생성 (안전한 방식)
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.split('?')[0]; // 쿼리 파라미터 제거
+    const resultUrl = `${baseUrl}?type=${myType.key}&score=${score}`;
+    
+    // 클립보드에 복사 시도
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(resultUrl)
+        .then(() => {
+          setToast("🔗 결과 링크가 클립보드에 복사되었습니다!");
+        })
+        .catch(() => {
+          // Clipboard API 실패 시 폴백
+          fallbackCopy(resultUrl);
+        });
+    } else {
+      // 구형 브라우저 지원
+      fallbackCopy(resultUrl);
+    }
+  }
+  
+  function fallbackCopy(text) {
+    try {
+      // execCommand를 사용한 폴백 복사
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        setToast("🔗 결과 링크가 클립보드에 복사되었습니다!");
+      } else {
+        // 수동 복사 모달 표시
+        setSharePanel({ open: true, content: text });
+      }
+    } catch (err) {
+      // 모든 방법 실패 시 수동 복사 모달 표시
+      setSharePanel({ open: true, content: text });
+    }
+  }
 
   return (
     <div
@@ -467,7 +559,7 @@ export default function App() {
           {step === 0 && <StartPage onStart={start} />}
           {step === 1 && (<QuizPage answers={answers} onChoose={choose} onFinish={goLoadingThenResult} />)}
           {step === 2 && <LoadingPage />}
-          {step === 3 && (<ResultPage score={score} myType={myType} onShare={shareResult} onRetry={resetAll} onShareKakao={shareKakao} onShareNaver={shareNaver} />)}
+                     {step === 3 && (<ResultPage score={score} myType={myType} onShare={shareResult} onRetry={resetAll} onShareKakao={shareKakao} onCopyResultLink={copyResultLink} />)}
         </motion.div>
 
         {step === 1 && (
@@ -514,11 +606,11 @@ function legacyCopy(text) {
 function handlePanelCopy(text, setToast) {
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => setToast('링크가 클립보드에 복사되었습니다!'));
+      navigator.clipboard.writeText(text).then(() => setToast('📋 링크가 클립보드에 복사되었습니다!'));
       return;
     }
   } catch {}
-  try { legacyCopy(text); setToast('링크가 클립보드에 복사되었습니다!'); } catch {}
+  try { legacyCopy(text); setToast('📋 링크가 클립보드에 복사되었습니다!'); } catch {}
 }
 
 function ShareFallbackModal({ content, onCopy, onClose }) {
@@ -528,12 +620,12 @@ function ShareFallbackModal({ content, onCopy, onClose }) {
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/10">
         <div className="mb-3 flex items-center justify-between">
           <div className="text-sm font-semibold" style={{ color: "var(--brand)" }}>공유 내용 복사</div>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100" aria-label="닫기"><XIcon size={18} /></button>
+          <button type="button" onClick={onClose} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100" aria-label="닫기"><XIcon size={18} /></button>
         </div>
         <textarea value={content} readOnly className="h-40 w-full resize-none rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 focus:outline-none" />
         <div className="mt-4 flex items-center justify-end gap-2">
-          <button onClick={onCopy} className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm"><CopyIcon size={16} />복사</button>
-          <button onClick={onClose} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">닫기</button>
+        <button type="button" onClick={onCopy} className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm"><CopyIcon size={16} />복사</button>
+        <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">닫기</button>
         </div>
       </div>
     </div>
@@ -584,7 +676,7 @@ function BrandButton({ label, onClick, icon: Icon, variant = "solid" }) {
   const outline = { backgroundColor: "#ffffff", color: "#111827", border: "1px solid rgba(0,0,0,0.12)" };
   const style = variant === "solid" ? solid : outline;
   return (
-    <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={onClick} className={base} style={style}>
+    <motion.button type="button" whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={onClick} className={base} style={style}>
       {Icon ? <Icon size={18} /> : null}
       <span>{label}</span>
     </motion.button>
@@ -609,7 +701,7 @@ function StartPage({ onStart }) {
 
 function ResultPill({ children }) { return (<span className="inline-block rounded-full px-3 py-1 text-xs" style={{ backgroundColor: "#F1F5F9", color: "#475569" }}>{children}</span>); }
 
-function ResultPage({ score, myType, onShare, onRetry, onShareKakao, onShareNaver }) {
+function ResultPage({ score, myType, onShare, onRetry, onShareKakao, onCopyResultLink }) {
   return (
     <div>
       <div className="mb-6 text-center">
@@ -640,14 +732,45 @@ function ResultPage({ score, myType, onShare, onRetry, onShareKakao, onShareNave
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <BrandButton onClick={onShare} icon={Share2} label="공유하기(텍스트/링크)" />
-        <BrandButton onClick={onShareKakao} label="카카오톡 공유" />
-        <BrandButton onClick={onShareNaver} icon={LinkIcon} label="네이버 공유" variant="outline" />
-        <BrandButton onClick={onRetry} icon={RotateCcw} label="다른 설문하기(처음으로)" variant="outline" />
+      {/* 공유 섹션 */}
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm">
+        <div className="mb-4 text-center">
+          <h3 className="text-lg font-bold text-slate-800">결과를 친구들과 공유해보세요! 🎉</h3>
+          <p className="mt-1 text-sm text-slate-600">나만의 휴식 스타일을 알려주세요</p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <BrandButton 
+            onClick={onShare} 
+            icon={Share2} 
+            label="📱 링크 복사하기" 
+            variant="solid"
+          />
+          <BrandButton 
+            onClick={onShareKakao} 
+            label="💬 카카오톡 공유" 
+            variant="solid"
+          />
+        </div>
+        
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <BrandButton 
+            onClick={onCopyResultLink} 
+            icon={LinkIcon} 
+            label="🔗 결과 링크 공유" 
+            variant="outline" 
+          />
+          <BrandButton 
+            onClick={onRetry} 
+            icon={RotateCcw} 
+            label="🔄 다시 테스트하기" 
+            variant="outline" 
+          />
+        </div>
+        
       </div>
-
-    
+      
     </div>
   );
 }
@@ -694,7 +817,7 @@ function QuizPage({ answers, onChoose, onFinish }) {
 
 function ChoiceCard({ label, text, onClick, isSelected }) {
   return (
-    <motion.button 
+    <motion.button type="button"
       whileHover={{ y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.06)" }} 
       whileTap={{ scale: 0.98 }} 
       onClick={onClick} 
