@@ -1,14 +1,15 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Share2, RotateCcw, PlayCircle, Coffee, Link as LinkIcon, Copy as CopyIcon, X as XIcon } from "lucide-react";
+import { Share2, RotateCcw, Coffee, Link as LinkIcon, Copy as CopyIcon, X as XIcon } from "lucide-react";
 
 /**
- * 휴식 스타일 진단 – 싱글 파일 React 웹앱
- * (요청 반영: ① 결과 화면 이미지 제거 ② 개발자 테스트 UI 제거 ③ 공유 버튼 신뢰성 개선)
- * ----------------------------------------------------------------------
- * • 공유하기(텍스트/링크): Web Share API 시도 → 실패/미지원 시 **내장 공유 패널(복사)**로 폴백
- * • Clipboard API 미지원/거부 상황에서도 execCommand 복사 폴백 제공
- * • 카카오/네이버 공유는 기존 로직 유지(카카오는 공개 이미지 필요)
+ * 휴식 스타일 진단 – 싱글 파일 React 웹앱 (공유 캐시 버그 수정본)
+ * 수정 요약
+ * - 공유 링크가 항상 결과 파라미터(?type=&score=)를 포함하도록 통일
+ * - 결과 화면 진입 시 주소창을 "정규 결과 URL"로 덮어써서(History.replaceState) 이후 공유도 안정화
+ * - 카카오/네이버/일반 공유에 동일한 결과 URL 사용
+ * - URL 파라미터로 진입 시, 더 이상 파라미터를 제거하지 않음 (공유/새로고침 시 유지)
+ * - URL 파라미터에서 답변 복원 시 12문항 배열로 올바르게 복원
  */
 
 // ===== 브랜드/구성 옵션 =====
@@ -28,11 +29,11 @@ const CONFIG = {
   loadingMs: 1000, // 로딩 시간(ms)
   // --- 공유 관련 ---
   siteUrl: typeof window !== "undefined" ? window.location.origin : "",
-  ogImageDefault: "/og-default.png", // 정적 공개 이미지 URL(권장: CDN)
-  kakaoAppKey: "1e54282d28e981ee3b6440f9f1f5ad53", // 카카오 JavaScript 키(예: "abcd1234...")
-  // 유형별 OG 이미지가 서버에 호스팅되어 있다면 base URL을 설정하세요. 예) "https://cdn.site.com/rest-types/"
-  // 이 경우 Kakao/OG 메타에 해당 퍼블릭 URL이 우선 사용됩니다.
-  typeOgBaseUrl: "https://workers-rest-style.vercel.app/Title.jpg",
+  // 카카오/미리보기 호환을 위해 절대 URL 권장
+  ogImageDefault: "https://workers-rest-style.vercel.app/og-default.png",
+  kakaoAppKey: "1e54282d28e981ee3b6440f9f1f5ad53", // 카카오 JavaScript 키
+  // 유형별 OG 이미지가 서버에 호스팅되어 있다면 "폴더" 형태의 base URL로 설정 (끝에 / 필요)
+  typeOgBaseUrl: "https://workers-rest-style.vercel.app/types/",
 };
 
 // ===== 설문 문항 =====
@@ -145,7 +146,7 @@ const TYPES = [
       "'휴식=상황 적응력'이라는 생각이 강함",
     ], 
     tips: [
-      "가변운 대화와 커피 타임",
+      "가벼운 대화와 커피 타임",
       "분위기 좋은 공용 자리에서 가벼운 업무 정리",
       "동료와 짧은 대화 후, 혼자 산책과 음악으로 재정비하는 '2단계 휴식'",
     ], 
@@ -185,7 +186,7 @@ const TYPES = [
     tips: [
       "계단 오르내리기",
       "창밖 풍경 감상",
-      "건물 로비나 외부 테리스에서 잠깐 숨돌리기",
+      "건물 로비나 외부 테라스에서 잠깐 숨돌리기",
     ], 
     hashtags: ["#움직임", "#탐험", "#활동적"] 
   },
@@ -231,7 +232,7 @@ function svgToDataUrl(svg) {
       : Buffer.from(svg, 'utf-8').toString('base64');
     return `data:image/svg+xml;base64,${base64}`;
   } catch {
-    const ascii = svg.replace(/[^\\x00-\\x7F]/g, '');
+    const ascii = svg.replace(/[^\x00-\x7F]/g, '');
     const base64 = (typeof window !== 'undefined') ? window.btoa(ascii) : Buffer.from(ascii, 'ascii').toString('base64');
     return `data:image/svg+xml;base64,${base64}`;
   }
@@ -263,11 +264,27 @@ function makeTypeSvg(index, title, tagline) {
 }
 function escapeXml(str) { return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;"); }
 function getTypeDisplayImageUrl(index, title, tagline) { return makeTypeSvg(index, title, tagline); }
-function getTypeOgImageUrl(index) { if (CONFIG.typeOgBaseUrl) return `${CONFIG.typeOgBaseUrl}type-${index}.png`; return CONFIG.ogImageDefault; }
+function getTypeOgImageUrl(index) {
+  const base = CONFIG.typeOgBaseUrl;
+  if (!base) return CONFIG.ogImageDefault;
+  // base가 파일이면 그대로 사용, 폴더면 슬래시 보정 후 파일명 조합
+  const isFile = /\.(png|jpe?g|webp|gif)$/i.test(base);
+  if (isFile) return base;
+  const safeBase = base.endsWith("/") ? base : base + "/";
+  return `${safeBase}type-${index}.png`;
+}
 
 // ===== 유틸 =====
 function scoreToTypeIndex(score) { return Math.min(7, Math.floor((score * 8) / 13)); }
 function classNames(...xs) { return xs.filter(Boolean).join(" "); }
+
+// URL에 현재 결과 파라미터를 강제 반영하는 유틸
+function getResultUrl(typeKey, score) {
+  const u = new URL(window.location.href);
+  u.searchParams.set("type", String(typeKey));
+  u.searchParams.set("score", String(score));
+  return u.toString();
+}
 
 // OG 메타 유틸
 function setOrCreateMeta(selector, attrs) {
@@ -296,7 +313,7 @@ function updateOgMeta({ title, description, image, url }) {
 let kakaoLoading = null;
 function loadKakaoIfNeeded(appKey) {
   if (!appKey) return Promise.resolve(false);
-  if (window.Kakao && window.Kakao.init && window.Kakao.isInitialized()) return Promise.resolve(true);
+  if (window.Kakao && window.Kakao.init && window.Kakao.isInitialized && window.Kakao.isInitialized()) return Promise.resolve(true);
   if (kakaoLoading) return kakaoLoading;
   kakaoLoading = new Promise((resolve) => {
     const script = document.createElement("script");
@@ -311,6 +328,8 @@ function isKakaoReady() { return !!(window.Kakao && window.Kakao.isInitialized &
 function buildNaverShareUrl(url, title) { return `https://share.naver.com/web/shareView.nhn?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`; }
 
 // ===== 메인 앱 =====
+const SHOW_TYPE_IMAGE = true;
+
 export default function App() {
   const [step, setStep] = useState(0); // 0: 시작, 1: 설문, 2: 로딩, 3: 결과
   const [answers, setAnswers] = useState([]);
@@ -353,20 +372,24 @@ export default function App() {
   const typeIndex = scoreToTypeIndex(score);
   const myType = TYPES[typeIndex];
 
-  // 결과 메타 업데이트 (유형별 OG 이미지 우선)
+  // 결과 메타 업데이트 + 결과 URL 강제(정규화)
   useEffect(() => {
     if (step !== 3) return;
-    const shareUrl = window.location.href;
+    const resultUrl = getResultUrl(myType.key, score);
+    // 주소창을 결과 URL로 맞춰서 이후 공유가 항상 동일 링크가 되도록
+    if (window.location.href !== resultUrl) {
+      window.history.replaceState({}, document.title, resultUrl);
+    }
     const title = `내 휴식 스타일: ${myType.name}`;
     const description = `${myType.tagline} · 점수 ${score}/12`;
     const ogImg = getTypeOgImageUrl(typeIndex) || CONFIG.ogImageDefault;
-    updateOgMeta({ title, description, image: ogImg, url: shareUrl });
+    updateOgMeta({ title, description, image: ogImg, url: resultUrl });
   }, [step, myType, score, typeIndex]);
 
   // 카카오 SDK 준비
   useEffect(() => { loadKakaoIfNeeded(CONFIG.kakaoAppKey); }, []);
   
-  // URL 파라미터에서 결과 정보 읽기 (직접 링크 접근 시)
+  // URL 파라미터에서 결과 정보 읽기 (직접 링크 접근 시) — 더 이상 파라미터를 지우지 않음
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -375,19 +398,14 @@ export default function App() {
       
       if (typeParam !== null && scoreParam !== null) {
         const typeKey = parseInt(typeParam);
-        const score = parseInt(scoreParam);
+        const s = parseInt(scoreParam);
         
         // 유효한 유형과 점수인지 확인
-        if (typeKey >= 0 && typeKey <= 7 && score >= 0 && score <= 12) {
-          // 해당 유형의 점수로 답변 배열 생성
-          const targetScore = Math.floor((typeKey * 13) / 8);
-          const newAnswers = Array(12).fill("A").slice(0, targetScore);
+        if (typeKey >= 0 && typeKey <= 7 && s >= 0 && s <= 12) {
+          // 12문항 배열 생성: 앞에서 s개는 "A", 나머지는 "B"
+          const newAnswers = Array.from({ length: 12 }, (_, i) => (i < s ? "A" : "B"));
           setAnswers(newAnswers);
           setStep(3); // 결과 페이지로 이동
-          
-          // URL 파라미터 제거 (브라우저 히스토리 정리)
-          const newUrl = window.location.pathname;
-          window.history.replaceState({}, document.title, newUrl);
         }
       }
     }
@@ -415,13 +433,18 @@ export default function App() {
     setStep(0); 
     // 로컬 스토리지도 초기화
     localStorage.removeItem("restStyleState");
+    // 주소창 파라미터 제거
+    const u = new URL(window.location.href);
+    u.search = "";
+    window.history.replaceState({}, document.title, u.toString());
   }
 
   function buildShareText() {
+    const resultUrl = getResultUrl(myType.key, score);
     const title = `내 휴식 스타일: ${myType.name}`;
     const text = `${myType.tagline} (점수 ${score}/12)`;
-    const url = window.location.href;
-    return { title, text: `${title}\\n${text}\\n${url}`, url };
+    // 실제 개행 적용 + 결과 URL 포함
+    return { title, text: `${title}\n${text}\n${resultUrl}`, url: resultUrl };
   }
 
   async function shareResult() {
@@ -464,15 +487,15 @@ export default function App() {
       setToast("⚠️ 카카오 공유를 사용하려면 설정이 필요합니다. 링크 복사로 진행해 주세요."); 
       return; 
     }
-    const shareUrl = window.location.href;
+    const resultUrl = getResultUrl(myType.key, score);
     const title = `내 휴식 스타일: ${myType.name}`;
     const description = `${myType.tagline} · 점수 ${score}/12`;
-    const imageUrl = getTypeOgImageUrl(typeIndex);
+    const imageUrl = getTypeOgImageUrl(typeIndex); // 절대 URL 반환
     try {
       window.Kakao.Share.sendDefault({
         objectType: "feed",
-        content: { title, description, imageUrl, link: { mobileWebUrl: shareUrl, webUrl: shareUrl } },
-        buttons: [{ title: "결과 보기", link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
+        content: { title, description, imageUrl, link: { mobileWebUrl: resultUrl, webUrl: resultUrl } },
+        buttons: [{ title: "결과 보기", link: { mobileWebUrl: resultUrl, webUrl: resultUrl } }],
       });
       setToast("💬 카카오톡 공유가 시작되었습니다!");
     } catch { 
@@ -481,10 +504,10 @@ export default function App() {
   }
 
   function shareNaver() { 
-    const shareUrl = window.location.href; 
+    const resultUrl = getResultUrl(myType.key, score);
     const title = `내 휴식 스타일: ${myType.name}`; 
     try {
-      window.open(buildNaverShareUrl(shareUrl, title), "_blank", "noopener,noreferrer,width=600,height=800");
+      window.open(buildNaverShareUrl(resultUrl, title), "_blank", "noopener,noreferrer,width=600,height=800");
       setToast("🌐 네이버 공유가 시작되었습니다!");
     } catch {
       setToast("❌ 네이버 공유 중 오류가 발생했습니다. 링크 복사로 진행해 주세요.");
@@ -492,12 +515,7 @@ export default function App() {
   }
   
   function copyResultLink() {
-    // 결과 링크 생성 (유형과 점수 정보 포함)
-    // 현재 페이지의 전체 URL을 기반으로 링크 생성 (안전한 방식)
-    const currentUrl = window.location.href;
-    const baseUrl = currentUrl.split('?')[0]; // 쿼리 파라미터 제거
-    const resultUrl = `${baseUrl}?type=${myType.key}&score=${score}`;
-    
+    const resultUrl = getResultUrl(myType.key, score);
     // 클립보드에 복사 시도
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(resultUrl)
@@ -505,11 +523,9 @@ export default function App() {
           setToast("🔗 결과 링크가 클립보드에 복사되었습니다!");
         })
         .catch(() => {
-          // Clipboard API 실패 시 폴백
           fallbackCopy(resultUrl);
         });
     } else {
-      // 구형 브라우저 지원
       fallbackCopy(resultUrl);
     }
   }
@@ -559,7 +575,7 @@ export default function App() {
           {step === 0 && <StartPage onStart={start} />}
           {step === 1 && (<QuizPage answers={answers} onChoose={choose} onFinish={goLoadingThenResult} />)}
           {step === 2 && <LoadingPage />}
-                     {step === 3 && (<ResultPage score={score} myType={myType} onShare={shareResult} onRetry={resetAll} onShareKakao={shareKakao} onCopyResultLink={copyResultLink} />)}
+          {step === 3 && (<ResultPage score={score} myType={myType} onShare={shareResult} onRetry={resetAll} onShareKakao={shareKakao} onCopyResultLink={copyResultLink} />)}
         </motion.div>
 
         {step === 1 && (
@@ -709,14 +725,16 @@ function ResultPage({ score, myType, onShare, onRetry, onShareKakao, onCopyResul
         <div className="text-3xl font-extrabold tracking-tight" style={{ color: "var(--brand)" }}>{score} / 12</div>
       </div>
 
-      {/* 유형별 대표 이미지 추가 */}
-      <div className="mb-6 text-center">
-        <img 
-          src={`/${myType.key}.jpg`}
-          alt={`${myType.name} 이미지`}
-          className="mx-auto h-96 w-96 rounded-2xl shadow-lg object-cover"
-        />
-      </div>
+      {/* 유형별 대표 이미지 (옵션) */}
+      {SHOW_TYPE_IMAGE && (
+        <div className="mb-6 text-center">
+          <img 
+            src={`/${myType.key}.jpg`}
+            alt={`${myType.name} 이미지`}
+            className="mx-auto h-96 w-96 rounded-2xl shadow-lg object-cover"
+          />
+        </div>
+      )}
 
       <div className="rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm">
         <div className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--brand)" }}>나의 휴식 스타일</div>
